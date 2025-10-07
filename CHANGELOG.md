@@ -36,12 +36,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - jest, @types/jest for testing
 
 ### Known Limitations
-- Speech recognition requires Android permissions (not yet implemented in UI)
+- **Speech Recognition Not Available**: Due to Expo Managed Workflow limitations, speech-to-text functionality is not implemented in v0.1.0. The UI shows speech controls but they will display an error message. Speech recognition will be added in a future version after evaluating bare React Native or alternative solutions.
 - Export functionality saves to device storage but doesn't trigger share dialog
 - No rich text editing (plain text only)
 - Single chapter per book (chapters are created but not fully managed)
 - No error boundaries or offline handling beyond basic try/catch
 - Tests are basic and don't cover all edge cases
+- Database tests fail in Jest due to expo-sqlite dependencies (known Expo testing limitation)
 
 ### Next Steps
 - v0.2.0: Add chapter management, notes system, auto-save

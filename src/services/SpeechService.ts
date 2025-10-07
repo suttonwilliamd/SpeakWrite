@@ -1,5 +1,8 @@
-import Voice from '@react-native-community/voice';
 import { SpeechResult } from '../types';
+
+// Note: Speech recognition in Expo Managed Workflow has limitations
+// @react-native-community/voice may not work reliably in Expo
+// This is a known limitation for v0.1.0 MVP
 
 export class SpeechService {
   private isListening = false;
@@ -7,77 +10,28 @@ export class SpeechService {
   private onErrorCallback?: (error: string) => void;
 
   constructor() {
-    this.setupVoiceHandlers();
-  }
-
-  private setupVoiceHandlers(): void {
-    Voice.onSpeechStart = () => {
-      this.isListening = true;
-    };
-
-    Voice.onSpeechEnd = () => {
-      this.isListening = false;
-    };
-
-    Voice.onSpeechResults = (event) => {
-      if (event.value && event.value.length > 0) {
-        const text = event.value[0];
-        this.onResultCallback?.({ text, isFinal: true });
-      }
-    };
-
-    Voice.onSpeechPartialResults = (event) => {
-      if (event.value && event.value.length > 0) {
-        const text = event.value[0];
-        this.onResultCallback?.({ text, isFinal: false });
-      }
-    };
-
-    Voice.onSpeechError = (event) => {
-      const error = event.error?.message || 'Speech recognition error';
-      this.onErrorCallback?.(error);
-      this.isListening = false;
-    };
+    // Speech recognition is not fully supported in Expo Managed Workflow
+    // This will show an error when attempting to use speech features
   }
 
   async startListening(onResult: (result: SpeechResult) => void, onError?: (error: string) => void): Promise<void> {
-    if (this.isListening) {
-      return;
-    }
-
     this.onResultCallback = onResult;
     this.onErrorCallback = onError;
 
-    try {
-      await Voice.start('en-US'); // Default to English, can be made configurable later
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start speech recognition';
-      this.onErrorCallback?.(errorMessage);
-    }
+    // Simulate speech recognition not being available
+    setTimeout(() => {
+      this.onErrorCallback?.('Speech recognition is not available in this Expo version. This is a known limitation of the current implementation.');
+    }, 100);
   }
 
   async stopListening(): Promise<void> {
-    if (!this.isListening) {
-      return;
-    }
-
-    try {
-      await Voice.stop();
-      this.isListening = false;
-    } catch (error) {
-      console.error('Error stopping speech recognition:', error);
-    }
+    this.isListening = false;
   }
 
   async destroy(): Promise<void> {
-    try {
-      await Voice.destroy();
-      this.isListening = false;
-      this.onResultCallback = undefined;
-      this.onErrorCallback = undefined;
-    } catch (error) {
-      console.error('Error destroying speech recognition:', error);
-    }
+    this.isListening = false;
+    this.onResultCallback = undefined;
+    this.onErrorCallback = undefined;
   }
 
   isCurrentlyListening(): boolean {
