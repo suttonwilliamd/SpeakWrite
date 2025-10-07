@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { Book, Chapter } from '../types';
+import { Book, Chapter, Note } from '../types';
 
 export class DatabaseService {
   private db: SQLite.SQLiteDatabase;
@@ -27,6 +27,20 @@ export class DatabaseService {
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         "order" INTEGER NOT NULL,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        FOREIGN KEY (bookId) REFERENCES books (id) ON DELETE CASCADE
+      );
+    `);
+
+    this.db.execSync(`
+      CREATE TABLE IF NOT EXISTS notes (
+        id TEXT PRIMARY KEY,
+        bookId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT NOT NULL,
+        tags TEXT NOT NULL,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         FOREIGN KEY (bookId) REFERENCES books (id) ON DELETE CASCADE
@@ -146,5 +160,69 @@ export class DatabaseService {
 
   deleteChapter(id: string): void {
     this.db.runSync('DELETE FROM chapters WHERE id = ?', [id]);
+  }
+
+  // Note operations
+  createNote(note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Note {
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+
+    this.db.runSync(
+      'INSERT INTO notes (id, bookId, title, content, category, tags, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, note.bookId, note.title, note.content, note.category, JSON.stringify(note.tags), now, now]
+    );
+
+    return {
+      id,
+      ...note,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
+    };
+  }
+
+  getNotes(bookId: string): Note[] {
+    const result = this.db.getAllSync('SELECT * FROM notes WHERE bookId = ? ORDER BY updatedAt DESC', [bookId]);
+    return result.map((row: any) => ({
+      ...row,
+      tags: JSON.parse(row.tags),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    }));
+  }
+
+  updateNote(id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'category' | 'tags'>>): void {
+    const now = new Date().toISOString();
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (updates.title !== undefined) {
+      fields.push('title = ?');
+      values.push(updates.title);
+    }
+    if (updates.content !== undefined) {
+      fields.push('content = ?');
+      values.push(updates.content);
+    }
+    if (updates.category !== undefined) {
+      fields.push('category = ?');
+      values.push(updates.category);
+    }
+    if (updates.tags !== undefined) {
+      fields.push('tags = ?');
+      values.push(JSON.stringify(updates.tags));
+    }
+
+    fields.push('updatedAt = ?');
+    values.push(now);
+    values.push(id);
+
+    this.db.runSync(
+      `UPDATE notes SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
+  }
+
+  deleteNote(id: string): void {
+    this.db.runSync('DELETE FROM notes WHERE id = ?', [id]);
   }
 }

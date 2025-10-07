@@ -4,11 +4,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { BookCreationScreen } from '../screens/BookCreationScreen';
 import { ChapterEditorScreen } from '../screens/ChapterEditorScreen';
+import { NotesScreen } from '../screens/NotesScreen';
+import { NoteEditorScreen } from '../screens/NoteEditorScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   BookCreation: undefined;
   ChapterEditor: { bookId: string; chapterId?: string };
+  Notes: { bookId: string };
+  NoteEditor: { bookId: string; noteId?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -42,6 +46,16 @@ export const AppNavigator: React.FC = () => {
           name="ChapterEditor"
           component={ChapterEditorScreen}
           options={{ title: 'Edit Chapter' }}
+        />
+        <Stack.Screen
+          name="Notes"
+          component={NotesScreen}
+          options={{ title: 'Notes' }}
+        />
+        <Stack.Screen
+          name="NoteEditor"
+          component={NoteEditorScreen}
+          options={{ title: 'Edit Note' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

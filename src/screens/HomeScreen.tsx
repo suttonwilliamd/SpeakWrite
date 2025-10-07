@@ -47,6 +47,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('ChapterEditor', { bookId: book.id, chapterId });
   };
 
+  const handleNotesPress = (book: Book) => {
+    navigation.navigate('Notes', { bookId: book.id });
+  };
+
   const handleDeleteBook = (bookId: string) => {
     Alert.alert(
       'Delete Book',
@@ -70,21 +74,29 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderBook = ({ item }: { item: Book }) => (
-    <TouchableOpacity
-      style={styles.bookItem}
-      onPress={() => handleBookPress(item)}
-      onLongPress={() => handleDeleteBook(item.id)}
-    >
-      <Text style={styles.bookTitle}>{item.title}</Text>
-      {item.description && (
-        <Text style={styles.bookDescription} numberOfLines={2}>
-          {item.description}
+    <View style={styles.bookItem}>
+      <TouchableOpacity
+        style={styles.bookContent}
+        onPress={() => handleBookPress(item)}
+        onLongPress={() => handleDeleteBook(item.id)}
+      >
+        <Text style={styles.bookTitle}>{item.title}</Text>
+        {item.description && (
+          <Text style={styles.bookDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+        )}
+        <Text style={styles.bookDate}>
+          Updated: {item.updatedAt.toLocaleDateString()}
         </Text>
-      )}
-      <Text style={styles.bookDate}>
-        Updated: {item.updatedAt.toLocaleDateString()}
-      </Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.notesButton}
+        onPress={() => handleNotesPress(item)}
+      >
+        <Text style={styles.notesButtonText}>Notes</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -152,6 +164,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bookContent: {
+    flex: 1,
+  },
+  notesButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 12,
+  },
+  notesButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   bookTitle: {
     fontSize: 18,
